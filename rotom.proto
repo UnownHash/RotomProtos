@@ -13,6 +13,7 @@ message MitmRequest {
         enum LoginSource {
             UNSET = 0;
             PTC = 1;
+            PTC_OAUTH = 2;
         }
 
         string username = 1;
