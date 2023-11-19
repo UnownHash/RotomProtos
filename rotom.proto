@@ -54,7 +54,7 @@ message MitmResponse {
     }
 
     message LoginResponse {
-        string device_id = 1;
+        string worker_id = 1;
         AuthStatus status = 2;
         bool supports_compression = 3;
     }
