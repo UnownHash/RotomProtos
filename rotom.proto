@@ -28,6 +28,7 @@ message MitmRequest {
             int32 method = 1;
             bytes payload = 2;
             bool is_compressed = 3;
+            string mitm_error = 4;
         }
 
         repeated SingleRpcRequest request = 1;
