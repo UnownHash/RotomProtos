@@ -44,14 +44,14 @@ message MitmRequest {
 }
 
 message MitmResponse {
+
     enum Status {
         UNSET = 0;
         SUCCESS = 200;
         ERROR_UNKNOWN = 500;
-        ERROR_GAME_NOT_READY = 501;
-        ERROR_LOGIN_IN_PROGRESS = 502;
-        ERROR_TOKEN_REJECTED = 503;
-        ERROR_NOT_LOGGED_IN = 504;
+        ERROR_RETRY_LATER = 501;
+        ERROR_WORKER_STOPPED = 502;
+        ERROR_RECONNECT = 503;
     }
 
     message LoginResponse {
