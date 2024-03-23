@@ -36,8 +36,14 @@ Note that the deviceId needs to correlate with your proto stream connections
 
 ### Restart game/mitm
 ```
-> {"id": 9, "method": "restartGame", "payload": null}
+> {"id": 9, "method": "restartApp", "payload": null}
 < {"id":9,"status":200}
+```
+
+### Get memory usage
+```
+> {"id": 12, "method": "getMemoryUsage", "payload": null}
+< {"id": 12,"status":200,"body":{"memFree":1000000, "memMitm": 500000, "memStart": 400000}}
 ```
 
 ### Get screen size (unused)
