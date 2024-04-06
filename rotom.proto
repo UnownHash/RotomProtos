@@ -58,6 +58,7 @@ message MitmResponse {
         string worker_id = 1;
         AuthStatus status = 2;
         bool supports_compression = 3;
+        string useragent = 4;
     }
 
     message RpcResponse {
