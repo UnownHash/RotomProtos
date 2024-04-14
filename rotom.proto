@@ -62,6 +62,7 @@ message MitmResponse {
         AuthStatus status = 2;
         bool supports_compression = 3;
         string useragent = 4;
+        uint64 mitm_capability = 5; // Bitwise field built up of Mitm Capability flags
     }
 
     message RpcResponse {
@@ -130,4 +131,8 @@ enum RpcStatus {
     RPC_STATUS_GOOGLE_PLAY_NOT_READY = 19;
     RPC_STATUS_LOGIN_ERROR_BAIL = 20;
     RPC_STATUS_MITM_DISALLOWED_REQUEST = 99;
+}
+
+enum MitmCapability {
+    MITM_CAPABILITY_REQUEST_LONG_SESSIONS = 1;
 }
