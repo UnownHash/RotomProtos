@@ -14,6 +14,9 @@ message MitmRequest {
             UNSET = 0;
             PTC = 1;
             PTC_OAUTH = 2;
+            FB = 3;
+            GOOGLE = 4;
+            N_KIDS = 5;
         }
 
         string username = 1;
