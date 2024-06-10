@@ -23,14 +23,14 @@ message MitmRequest {
         LoginSource source = 2;
         bytes token_proto = 3;
         string worker_id = 4;
-        bool enable_compression = 5;
+        bool enable_compression = 5;    // Controller can support compressed responses
     }
 
     message RpcRequest {
         message SingleRpcRequest {
             int32 method = 1;
             bytes payload = 2;
-            bool is_compressed = 3;
+            bool is_compressed = 3;     // This request is compressed
         }
 
         repeated SingleRpcRequest request = 1;
@@ -60,15 +60,16 @@ message MitmResponse {
     message LoginResponse {
         string worker_id = 1;
         AuthStatus status = 2;
-        bool supports_compression = 3;
+        bool supports_compression = 3;  // Agent can support compressed requests
         string useragent = 4;
+        bool request_long_sessions = 5; // Agent prefers longer sessions over fast reconnects
     }
 
     message RpcResponse {
         message SingleRpcResponse {
             int32 method = 1;
             bytes payload = 2;
-            bool is_compressed = 3;
+            bool is_compressed = 3;     // This payload response is compressed
         }
 
         RpcStatus rpc_status = 1;
