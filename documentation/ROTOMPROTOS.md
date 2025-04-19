@@ -26,6 +26,8 @@ The document will contain both a changelog and a full guide explanation of the p
 
 - [28-08-2026 - XXXXXXX:](https://github.com/UnownHash/RotomProtos/blob/main/rotom.proto) **Will be updated on next PR, as the commit hash is unobtainable now.** Add new `NIANTIC_JWT` login method to align with the new Niantic Kids authentication flow and to support the (most likely to happen) upcoming authentication flow changes.
 
+- [26-09-2026 - XXXXXXX:](https://github.com/UnownHash/RotomProtos/blob/main/rotom.proto) **Will be updated on next PR, as the commit hash is unobtainable now.** Add the missing `AUTH_STATUS_GOOGLE_PLAY_NOT_READY` and `AUTH_STATUS_LOGIN_ERROR_BAIL` authentication statuses, so that the Google Play-related and bail-out login failures already reportable through `RpcStatus` can also be reported on a login response.
+
 ## Full `rotom.proto` Explanation
 
 Protos will be explained in the following format: `### MitmRequest => LoginRequest => LoginSource`
@@ -175,6 +177,8 @@ Protos will be explained in the following format: `### MitmRequest => LoginReque
 - `8 - AUTH_STATUS_ACCESS_RATE_LIMITED`: Access has been rate limited.
 - `9 - AUTH_STATUS_SESSION_TERMINATED`: The current session was terminated.
 - `10 - AUTH_STATUS_SESSION_FAILED`: The current session failed.
+- `11 - AUTH_STATUS_GOOGLE_PLAY_NOT_READY`: Required Google Play functionality (Google Play Integrity/Google SafetyNet) is not ready, so the login could not be completed. The `AuthStatus` counterpart of `RPC_STATUS_GOOGLE_PLAY_NOT_READY`.
+- `12 - AUTH_STATUS_LOGIN_ERROR_BAIL`: A login error occurred and the login flow should be abandoned instead of retried. The `AuthStatus` counterpart of `RPC_STATUS_LOGIN_ERROR_BAIL`.
 - `20 - AUTH_STATUS_LOGIN_TIMEOUT`: The login attempt timed out.
 
 ---
