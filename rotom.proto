@@ -17,6 +17,7 @@ message MitmRequest {
             FB = 3;
             GOOGLE = 4;
             N_KIDS = 5;
+            NIANTIC_JWT = 6;
         }
 
         string username = 1;
