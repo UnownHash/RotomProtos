@@ -24,6 +24,8 @@ The document will contain both a changelog and a full guide explanation of the p
 
 - [23-09-2024 - 4677808:](https://github.com/UnownHash/RotomProtos/commit/46778084df2593d4281075c93d30f55594681c38) Add two new RPC response methods to be able to counter Google Play (Google Play Integrity/Google SafetyNet)-related methods.
 
+- [28-08-2026 - XXXXXXX:](https://github.com/UnownHash/RotomProtos/blob/main/rotom.proto) **Will be updated on next PR, as the commit hash is unobtainable now.** Add new `NIANTIC_JWT` login method to align with the new Niantic Kids authentication flow and to support the (most likely to happen) upcoming authentication flow changes.
+
 ## Full `rotom.proto` Explanation
 
 Protos will be explained in the following format: `### MitmRequest => LoginRequest => LoginSource`
