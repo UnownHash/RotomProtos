@@ -1,140 +1,359 @@
-//RotomProtos V2
+// RotomProtos V2
+//
+// Protocol messages exchanged between the MITM (man-in-the-middle) layer and
+// workers/clients. The protocol supports authentication/login requests,
+// batched RPC requests, and their corresponding responses.
+//
+// Wire compatibility notes:
+// - Do not renumber existing fields or enum values.
+// - Deprecated enum values are retained for backwards compatibility.
+// - `payload` fields contain the serialized bytes of the RPC-specific proto.
+// - Compression is negotiated during login and indicated per RPC message.
 
 syntax = "proto3";
+
 package RotomProtos;
 
+// Top-level request sent to the MITM service.
+//
+// Each request has a unique `id` that is echoed back in the corresponding
+// MitmResponse, allowing requests and responses to be correlated.
+//
+// The concrete request type is selected through the `payload` oneof and should
+// normally correspond to the value of `method`.
 message MitmRequest {
 	enum Method {
+		// No method specified.
 		UNSET = 0;
+
+		// Authenticate/login a worker.
 		LOGIN = 1;
+
+		// Execute one or more RPC calls.
 		RPC_REQUEST = 2;
 	}
 
+	// Authentication request used to establish a worker session.
 	message LoginRequest {
-		// Uses allways real id (enum -> name -> lower)
+		// Authentication provider used for this login.
+		//
+		// The value is expected to use the provider's real identifier:
+		// enum value -> enum name -> lowercase.
 		enum LoginSource {
+			// No authentication source specified.
 			UNSET = 0;
+
+			// Legacy PTC authentication.
+			//
+			// Deprecated and retained for backwards compatibility.
 			PTC = 1 [deprecated = true];
+
+			// PTC OAuth authentication.
 			PTC_OAUTH = 2;
+
+			// Facebook authentication.
 			FACEBOOK = 3;
+
+			// Google authentication.
 			GOOGLE = 4;
-			SUPER_AWESOME = 5 [deprecated = true]; // end in 0.425.1  (ref)
+
+			// Legacy/internal authentication source.
+			//
+			// Removed after version 0.425.1.
+			SUPER_AWESOME = 5 [deprecated = true];
+
+			// Niantic JWT-based authentication.
 			NIANTIC_JWT = 6;
 		}
 
+		// Username/account identifier associated with the login.
 		string username = 1;
+
+		// Authentication provider used by the account.
 		LoginSource source = 2;
+
+		// Serialized authentication token/request data.
+		//
+		// The contents depend on the selected LoginSource.
 		bytes token_proto = 3;
+
+		// Identifier of the worker requesting authentication.
 		string worker_id = 4;
+
+		// Requests that the MITM enable compression for subsequent RPC
+		// communication when supported.
 		bool enable_compression = 5;
 	}
 
+	// Request containing one or more RPC calls to be dispatched.
 	message RpcRequest {
+		// A single RPC invocation within a batch.
 		message SingleRpcRequest {
+			// Numeric identifier of the RPC method.
+			//
+			// The method-specific protobuf is not defined in this protocol;
+			// `payload` contains its serialized request message.
 			int32 method = 1;
+
+			// Serialized payload for the RPC method.
 			bytes payload = 2;
+
+			// Indicates whether `payload` is compressed.
 			bool is_compressed = 3;
 		}
 
+		// RPC calls to execute. Calls are processed as a single request batch.
 		repeated SingleRpcRequest request = 1;
+
+		// Latitude associated with the request context.
 		double lat = 2;
+
+		// Longitude associated with the request context.
 		double lon = 3;
 	}
 
-	uint32 id = 1; // maybe this is better as int32
+	// Request identifier used to correlate this request with a MitmResponse.
+	//
+	// Consider changing to int32 only in a future, explicitly versioned
+	// protocol if signed IDs are actually required. Changing the field type
+	// without considering existing wire values can affect compatibility.
+	uint32 id = 1;
+
+	// Type of operation requested.
 	Method method = 2;
 
+	// Exactly one request payload may be present.
+	//
+	// The selected payload should match `method`.
 	oneof payload {
+		// Present when `method == LOGIN`.
 		LoginRequest login_request = 3;
+
+		// Present when `method == RPC_REQUEST`.
 		RpcRequest rpc_request = 4;
 	}
 }
 
+// Top-level response returned by the MITM service.
+//
+// The `id` corresponds to the `id` from the original MitmRequest.
 message MitmResponse {
 	enum Status {
+		// No status specified.
 		UNSET = 0;
+
+		// Request completed successfully.
 		SUCCESS = 200;
+
+		// An unspecified error occurred.
 		ERROR_UNKNOWN = 500;
+
+		// The request should be retried later.
 		ERROR_RETRY_LATER = 501;
+
+		// The worker handling the request has stopped.
 		ERROR_WORKER_STOPPED = 502;
+
+		// The client should reconnect to the MITM service.
 		ERROR_RECONNECT = 503;
 	}
 
+	// Result of a login/authentication request.
 	message LoginResponse {
+		// Identifier of the authenticated worker.
 		string worker_id = 1;
+
+		// Authentication result.
 		AuthStatus status = 2;
+
+		// Indicates whether the worker/server supports compressed RPC payloads.
 		bool supports_compression = 3;
+
+		// User-Agent associated with the authenticated session.
 		string useragent = 4;
 	}
 
+	// Result of an RPC request batch.
 	message RpcResponse {
+		// Response to a single RPC invocation.
 		message SingleRpcResponse {
+			// Numeric identifier of the RPC method being returned.
 			int32 method = 1;
+
+			// Serialized response payload for the RPC method.
 			bytes payload = 2;
+
+			// Indicates whether `payload` is compressed.
 			bool is_compressed = 3;
 		}
 
+		// Overall status of the RPC dispatch/execution.
 		RpcStatus rpc_status = 1;
+
+		// Responses corresponding to the RPC calls in the request.
 		repeated SingleRpcResponse response = 2;
 	}
 
-	uint32 id = 1;  // maybe this is better as int32
+	// Request identifier copied from the corresponding MitmRequest.
+	uint32 id = 1;
+
+	// Overall status of the MITM request.
 	Status status = 2;
 
+	// Exactly one response payload may be present.
 	oneof payload {
+		// Present when responding to a LOGIN request.
 		LoginResponse login_response = 3;
+
+		// Present when responding to an RPC_REQUEST.
 		RpcResponse rpc_response = 4;
 	}
 
+	// Human-readable description of a MITM-level error.
+	//
+	// Intended primarily for diagnostics/logging. Clients should use `status`
+	// and `rpc_status` for programmatic error handling.
 	string mitm_error = 100;
 }
 
+// Information sent when a worker establishes a connection.
+//
+// This message describes the worker/client identity and runtime environment
+// before normal request/response processing begins.
 message WelcomeMessage {
+	// Identifier assigned to the worker.
 	string worker_id = 1;
+
+	// Origin or source of the connection.
 	string origin = 2;
+
+	// Numeric application/client version.
 	int32 version_code = 3;
+
+	// Human-readable application/client version.
 	string version_name = 4;
+
+	// User-Agent reported by the client.
 	string useragent = 5;
+
+	// Identifier of the device associated with the worker.
 	string device_id = 6;
 }
 
+// Result of an authentication/login operation.
+//
+// Values are intentionally explicit because callers may need to distinguish
+// between retryable failures, authentication failures, account restrictions,
+// and client/device incompatibility.
 enum AuthStatus {
+	// No authentication status specified.
 	AUTH_STATUS_UNSET = 0;
+
+	// Failed while requesting an authentication token.
 	AUTH_STATUS_AUTH_TOKEN_REQUEST_FAILED = 1;
+
+	// Authentication token request was initiated/sent.
 	AUTH_STATUS_AUTH_TOKEN_REQUESTED = 2;
+
+	// Authentication token was successfully obtained.
 	AUTH_STATUS_GOT_AUTH_TOKEN = 3;
+
+	// The device/client is not compatible with the service.
 	AUTH_STATUS_DEVICE_INCOMPATIBLE = 4;
+
+	// The requested user/account could not be found.
 	AUTH_STATUS_USER_NOT_FOUND = 5;
+
+	// Access to the account/service was denied.
 	AUTH_STATUS_ACCESS_DENIED = 6;
+
+	// Access to the account has been suspended.
 	AUTH_STATUS_ACCESS_SUSPENDED = 7;
+
+	// Authentication requests are being rate limited.
 	AUTH_STATUS_ACCESS_RATE_LIMITED = 8;
+
+	// The current session has been terminated.
 	AUTH_STATUS_SESSION_TERMINATED = 9;
+
+	// The authentication session failed.
 	AUTH_STATUS_SESSION_FAILED = 10;
+
+	// Google Play authentication/services are not ready.
 	AUTH_STATUS_GOOGLE_PLAY_NOT_READY = 11;
+
+	// Login failed in a way that should terminate/bail out of the login flow.
 	AUTH_STATUS_LOGIN_ERROR_BAIL = 12;
+
+	// Login operation timed out.
 	AUTH_STATUS_LOGIN_TIMEOUT = 20;
 }
 
+// Result of RPC dispatch/execution.
+//
+// These statuses provide more detailed information than the top-level
+// MitmResponse.Status and should be used when handling RPC-specific failures.
 enum RpcStatus {
+	// No RPC status specified.
 	RPC_STATUS_UNDEFINED = 0;
+
+	// RPC completed successfully.
 	RPC_STATUS_SUCCESS = 1;
+
+	// The RPC response was invalid or could not be interpreted.
 	RPC_STATUS_BAD_RESPONSE = 3;
+
+	// The RPC action itself returned an error.
 	RPC_STATUS_ACTION_ERROR = 4;
+
+	// Failed to dispatch the RPC to its handler.
 	RPC_STATUS_DISPATCH_ERROR = 5;
+
+	// The upstream/server returned an error.
 	RPC_STATUS_SERVER_ERROR = 6;
+
+	// Failed to assign the RPC to a worker/handler.
 	RPC_STATUS_ASSIGNMENT_ERROR = 7;
+
+	// The request violated the expected protocol.
 	RPC_STATUS_PROTOCOL_ERROR = 8;
+
+	// Authentication was required or failed.
 	RPC_STATUS_AUTHENTICATION_ERROR = 9;
+
+	// The RPC request was cancelled.
 	RPC_STATUS_CANCELLED_REQUEST = 10;
+
+	// An unspecified RPC error occurred.
 	RPC_STATUS_UNKNOWN_ERROR = 11;
+
+	// The request must not be retried.
 	RPC_STATUS_NO_RETRIES_ERROR = 12;
+
+	// The request was not authorized.
 	RPC_STATUS_UNAUTHORIZED_ERROR = 13;
+
+	// Failed to parse the RPC request or response.
 	RPC_STATUS_PARSING_ERROR = 14;
+
+	// Access to the requested operation was denied.
 	RPC_STATUS_ACCESS_DENIED = 15;
+
+	// Access to the account/service has been suspended.
 	RPC_STATUS_ACCESS_SUSPENDED = 16;
+
+	// The device/client is incompatible with the requested operation.
 	RPC_STATUS_DEVICE_INCOMPATIBLE = 17;
+
+	// The request was rate limited.
 	RPC_STATUS_ACCESS_RATE_LIMITED = 18;
+
+	// Google Play services are not ready.
 	RPC_STATUS_GOOGLE_PLAY_NOT_READY = 19;
+
+	// Login failed and the login flow should be terminated.
 	RPC_STATUS_LOGIN_ERROR_BAIL = 20;
+
+	// The MITM layer explicitly rejected the request.
 	RPC_STATUS_MITM_DISALLOWED_REQUEST = 99;
 }
