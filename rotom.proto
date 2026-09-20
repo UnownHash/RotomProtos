@@ -439,7 +439,8 @@ message RegisterControllerResponse {
 	// Negotiated minor protocol version to use.
 	int32 proto_minor_version = 5;
 
-	// Note: field 6 is reserved and must not be reused.
+	// Field 6 is reserved and must not be reused.
+	reserved 6;
 
 	// Identifier of the worker assigned to the controller.
 	//
