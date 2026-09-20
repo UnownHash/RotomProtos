@@ -1,0 +1,35 @@
+name: proto
+
+on:
+  push:
+    branches: [main]
+    paths: ['**/*.proto', '.github/workflows/proto.yml', 'gen.sh']
+  pull_request:
+    paths: ['**/*.proto', '.github/workflows/proto.yml', 'gen.sh']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        lang: [python, csharp, cpp, java, descriptor]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install protoc
+        uses: arduino/setup-protoc@v3
+
+      - name: Generate ${{ matrix.lang }}
+        run: |
+          chmod +x gen.sh
+          ./gen.sh -l ${{ matrix.lang }}
+
+      - name: Show output
+        run: find out -type f | sort
+
+      - name: Upload generated code (${{ matrix.lang }})
+        uses: actions/upload-artifact@v4
+        with:
+          name: rotom-${{ matrix.lang }}
+          path: out/
+
