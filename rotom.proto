@@ -221,6 +221,18 @@ message MitmResponse {
 // This message describes the worker/client identity and runtime environment
 // before normal request/response processing begins.
 message WelcomeMessage {
+	// Operating system platform of the worker/device.
+	enum Platform {
+		// No platform specified.
+		UNSET = 0;
+
+		// Apple iOS device.
+		IOS = 1;
+
+		// Android device.
+		ANDROID = 2;
+	}
+
 	// Identifier assigned to the worker.
 	string worker_id = 1;
 
@@ -238,6 +250,15 @@ message WelcomeMessage {
 
 	// Identifier of the device associated with the worker.
 	string device_id = 6;
+
+	// Operating system platform of the worker/device.
+	Platform platform = 7;
+
+	// Reserved for future use. Must not be relied upon.
+	bool reserved1 = 8;
+
+	// Reserved for future use. Must not be relied upon.
+	string reserved2 = 9;
 }
 
 // Result of an authentication/login operation.
@@ -356,4 +377,78 @@ enum RpcStatus {
 
 	// The MITM layer explicitly rejected the request.
 	RPC_STATUS_MITM_DISALLOWED_REQUEST = 99;
+}
+
+// Request to register a controller with the service.
+//
+// Sent when a controller connects so it can negotiate the protocol
+// version and declare its capacity for worker assignment.
+message RegisterControllerRequest {
+	// Identifier of the controller being registered.
+	string id = 1;
+
+	// Major protocol version supported by the controller.
+	//
+	// A major version mismatch indicates incompatibility.
+	int32 proto_major_version = 2;
+
+	// Minor protocol version supported by the controller.
+	int32 proto_minor_version = 3;
+
+	// Relative capacity/weight of the controller.
+	//
+	// Used when deciding how workers are assigned across controllers.
+	int32 weight = 4;
+}
+
+// Result of a RegisterControllerRequest.
+//
+// Confirms registration and returns the negotiated protocol version
+// plus, on success, the worker assigned to the controller.
+message RegisterControllerResponse {
+	// Registration outcome.
+	enum RegisterControllerResponseStatus {
+		// No status specified.
+		UNSET = 0;
+
+		// Controller was registered successfully.
+		SUCCESS = 1;
+
+		// Registration failed because no workers are available.
+		NO_WORKERS_AVAILABLE = 2;
+
+		// Registration failed due to an unspecified error.
+		ERROR = 3;
+	}
+
+	// Registration outcome.
+	RegisterControllerResponseStatus status = 1;
+
+	// Human-readable description of the status.
+	//
+	// Intended primarily for diagnostics/logging. Clients should use
+	// `status` for programmatic handling.
+	string status_reason = 2;
+
+	// User-Agent to use for subsequent requests.
+	string user_agent = 3;
+
+	// Negotiated major protocol version to use.
+	int32 proto_major_version = 4;
+
+	// Negotiated minor protocol version to use.
+	int32 proto_minor_version = 5;
+
+	// Note: field 6 is reserved and must not be reused.
+
+	// Identifier of the worker assigned to the controller.
+	//
+	// Present when `status == SUCCESS`.
+	string assigned_worker_id = 7;
+
+	// Delay before the controller should retry registration.
+	//
+	// Used when registration was not successful (for example when
+	// `status == NO_WORKERS_AVAILABLE` or `status == ERROR`).
+	int64 retry_after = 8;
 }
