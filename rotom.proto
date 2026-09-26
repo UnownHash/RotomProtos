@@ -12,11 +12,12 @@ message MitmRequest {
     message LoginRequest {
         enum LoginSource {
             UNSET = 0;
-            PTC = 1;
+            PTC = 1 [deprecated = true];
             PTC_OAUTH = 2;
             FB = 3;
             GOOGLE = 4;
-            N_KIDS = 5;
+            SUPER_AWESOME = 5 [deprecated = true];
+            NIANTIC_JWT = 6;
         }
 
         string username = 1;
@@ -47,7 +48,6 @@ message MitmRequest {
 }
 
 message MitmResponse {
-
     enum Status {
         UNSET = 0;
         SUCCESS = 200;
@@ -55,6 +55,7 @@ message MitmResponse {
         ERROR_RETRY_LATER = 501;
         ERROR_WORKER_STOPPED = 502;
         ERROR_RECONNECT = 503;
+        ERROR_RESTART_SESSION = 504;
     }
 
     message LoginResponse {
@@ -85,12 +86,21 @@ message MitmResponse {
 }
 
 message WelcomeMessage {
+    enum Platform {
+        UNSET = 0;
+        IOS = 1;
+        ANDROID = 2;
+    }
+
     string worker_id = 1;
     string origin = 2;
     int32 version_code = 3;
     string version_name = 4;
     string useragent = 5;
     string device_id = 6;
+    Platform platform = 7;
+    bool reserved1 = 8;
+    string reserved2 = 9;
 }
 
 enum AuthStatus {
@@ -130,4 +140,28 @@ enum RpcStatus {
     RPC_STATUS_GOOGLE_PLAY_NOT_READY = 19;
     RPC_STATUS_LOGIN_ERROR_BAIL = 20;
     RPC_STATUS_MITM_DISALLOWED_REQUEST = 99;
+}
+
+message RegisterControllerRequest {
+    string id = 1;
+    int32 proto_major_version = 2;
+    int32 proto_minor_version = 3;
+    int32 weight = 4;
+}
+
+message RegisterControllerResponse {
+    enum RegisterControllerResponseStatus {
+        UNSET = 0;
+        SUCCESS = 1;
+        NO_WORKERS_AVAILABLE = 2;
+        ERROR = 3;
+    }
+
+    RegisterControllerResponseStatus status = 1;
+    string status_reason = 2;
+    string user_agent = 3;
+    int32 proto_major_version = 4;
+    int32 proto_minor_version = 5;
+    string assigned_worker_id = 7;
+    int64 retry_after = 8;
 }

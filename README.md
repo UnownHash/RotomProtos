@@ -1,6 +1,9 @@
 # Rotom Protos
 
-This repository contains the protobuf definitions for Rotom.
+This repository contains the protobuf definitions for Rotom. It also contains some documentation, with the idea being to add more documentation later on.
+
+## Documentation
+- `documentation/ROTOMPROTOS.md`: History and full explanation of the `rotom.proto` file.
 
 ## Connecting to Rotom
 
