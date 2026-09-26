@@ -26,8 +26,6 @@ The document will contain both a changelog and a full guide explanation of the p
 
 - [28-08-2026 - XXXXXXX:](https://github.com/UnownHash/RotomProtos/blob/main/rotom.proto) **Will be updated on next PR, as the commit hash is unobtainable now.** Add new `NIANTIC_JWT` login method to align with the new Niantic Kids authentication flow and to support the (most likely to happen) upcoming authentication flow changes.
 
-- [26-09-2026 - XXXXXXX:](https://github.com/UnownHash/RotomProtos) **Will be updated on next PR, as the commit hash is unobtainable now.** Clarify some fields and documentation.
-
 ## Full `rotom.proto` Explanation
 
 Protos will be explained in the following format: `### MitmRequest => LoginRequest => LoginSource`
