@@ -99,8 +99,8 @@ Protos will be explained in the following format: `### MitmRequest => LoginReque
 - `500 - ERROR_UNKNOWN`: Unknown MITM error.
 - `501 - ERROR_RETRY_LATER`: Temporary error where the controller should retry later.
 - `502 - ERROR_WORKER_STOPPED`: The assigned worker has stopped.
-- `503 - ERROR_RECONNECT`: The controller should reconnect to the MITM.
-- `504 - ERROR_RESTART_SESSION`: The controller should restart the current worker session.
+- `503 - ERROR_RECONNECT`: The controller should reconnect to the MITM - with a new account.
+- `504 - ERROR_RESTART_SESSION`: The controller should restart the current worker session - with the same account.
 
 #### Message - LoginResponse:
 
