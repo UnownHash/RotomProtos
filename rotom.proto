@@ -166,5 +166,5 @@ message RegisterControllerResponse {
 	int32 proto_minor_version = 5;
 	string assigned_worker_id = 7;
 	int64 retry_after = 8;
-  reserved 6;
+	reserved 6;
 }
